@@ -17,17 +17,50 @@ app.use(bodyParser.json());
  */
 app.get('/members', (req, res) => {
   const query = req.query.query;
+  const sort = req.query.sort;
+  const rating = req.query.rating;
+  const activity = req.query.activity;
+
+  let filteredMembers = [...members];
+  
+  // filter by name
   if (query) {
     const q = query.toLowerCase();
-    const filteredMembers = members.filter(member =>
+    filteredMembers = members.filter(member =>
       member?.name?.toLowerCase()?.includes(q)
     );
     console.log('GET filtered /members');
-    res.send(filteredMembers);
-    return;
   }
+
+  // filter by rating
+  if (rating) {
+    filteredMembers = filteredMembers.filter(member => member.rating === ratingNumber);
+  }
+
+  // Filter by number of activities?? or Name of activities? Unclear. 
+  // filter by activity
+  // If an activity is included in the list
+  if (activity) {
+    filteredMembers = filteredMembers.filter(member => 
+      member.activities.map(a => a.toLowerCase()).includes(activity)
+    );
+  }
+
+  // sort by name
+  if (sort) {
+    if (sort === 'asc') {
+      filteredMembers.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (sort === 'desc') {
+      filteredMembers.sort((a, b) => b.name.localeCompare(a.name));
+    }
+  }
+
+  // sort by Activity
+  // What parameter should we take to sort the activities? 
+  // Based on number of activities? Or unique activities? 
+
   console.log('GET /members');
-  res.send(members);
+  res.send(filteredMembers);
 });
 
 /**
@@ -69,7 +102,7 @@ app.patch('/members/:id', (req, res) => {
 
   if (body) {
     members = members.map(member => {
-      if (member.id === id) {
+      if (member.id == id) {
         return { ...member, ...body };
       }
       return member;
@@ -84,8 +117,8 @@ app.patch('/members/:id', (req, res) => {
 app.delete('/members/:id', (req, res) => {
   console.log('DELETE /members');
   const id = req.params.id;
-  
-  const memberIndex = members.findIndex(member => member.id === id);
+  //  quick fix the delete operation on new additions
+  const memberIndex = members.findIndex(member => member.id == id);
   
   if (memberIndex !== -1) {
     members.splice(memberIndex, 1);
